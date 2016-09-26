@@ -1,0 +1,55 @@
+{
+  "name": "seneca-web-adapter-koa1",
+  "description": "seneca-web adapter for koa web framework (v1)",
+  "version": "1.0.0",
+  "keywords": [
+    "seneca",
+    "web",
+    "plugin"
+  ],
+  "author": "Tyler Waters (https://github.com/tswaters)",
+  "contributors": [],
+  "license": "MIT",
+  "main": "seneca-web-adapter-koa1.js",
+  "scripts": {
+    "test": "lab -I @@any-promise/REGISTRATION -v -L -t 80 -m 5000",
+    "test-debug": "node --debug-brk=5858 node_modules/lab/bin/lab -I @@any-promise/REGISTRATION -v -m 5000",
+    "coveralls": "lab -s -r lcov | coveralls",
+    "coverage": "lab -v -L -r html > docs/coverage.html"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "seneca-web-adapter-koa1.js"
+  ],
+  "peerDependencies": {
+    "seneca-web": "^1.0.0",
+    "koa": "^1.2.4",
+    "koa-router": "^5.4.0"
+  },
+  "dependencies": {
+    "co-body": "^4.2.0",
+    "lodash": "^4.15.0"
+  },
+  "devDependencies": {
+    "code": "^3.0.2",
+    "coveralls": "^2.11.12",
+    "eslint-config-seneca": "^3.0.0",
+    "eslint-plugin-hapi": "^4.0.0",
+    "eslint-plugin-standard": "^2.0.0",
+    "koa": "^1.2.4",
+    "koa-router": "^5.4.0",
+    "lab": "^11.0.1",
+    "pre-commit": "^1.1.3",
+    "request": "^2.74.0",
+    "seneca": "plugin",
+    "seneca-web": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tswaters/seneca-web-adapter-koa1.git"
+  },
+  "pre-commit": [
+    "test"
+  ]
+}
