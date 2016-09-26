@@ -1,6 +1,7 @@
 # Seneca Web Adapter Koa
 
 [![Build Status][travis-badge]][travis-url]
+[![Coverage Status][coveralls-badge]][coveralls-url]
 
 This is an adapter for [seneca-web](https://github.com/senecajs/seneca-web/) using koa/koa-routes.
 
@@ -46,3 +47,5 @@ Doing this with koa will result in unexpected explosions. Koa Router must be use
 
 [travis-badge]: https://travis-ci.org/tswaters/seneca-web-adapter-koa1.svg?branch=master
 [travis-url]: https://travis-ci.org/tswaters/seneca-web-adapter-koa1
+[coveralls-badge]: https://coveralls.io/repos/github/tswaters/seneca-web-adapter-koa1/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/tswaters/seneca-web-adapter-koa1?branch=master
