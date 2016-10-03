@@ -134,10 +134,21 @@ describe('koa', () => {
       }
     }
 
+    app.use(function * (next) {
+      try {
+        yield next
+      }
+      catch (err) {
+        this.status = 400
+        this.message = err.orig.message.replace('gate-executor: ', '')
+        this.app.emit('error', err, this)
+      }
+    })
+
     si.use(Web, {adapter: require('..'), context: Router()})
 
     si.add('role:test,cmd:error', (msg, reply) => {
-      reply(new Error('aw snap'))
+      reply(new Error('aw snap!'))
     })
 
     si.act('role:web', config, (err, reply) => {
@@ -148,7 +159,8 @@ describe('koa', () => {
       Request.get('http://127.0.0.1:3000/error', (err, res, body) => {
         if (err) return done(err)
 
-        expect(body).to.be.equal('Internal Server Error')
+        expect(res.statusCode).to.equal(400)
+        expect(body).to.be.equal('aw snap!')
         done()
       })
     })
