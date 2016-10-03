@@ -23,7 +23,7 @@
     "seneca-web-adapter-koa1.js"
   ],
   "peerDependencies": {
-    "seneca-web": "^1.0.0",
+    "seneca-web": "^1.0.0 || ^2.0.0",
     "koa": "^1.2.4",
     "koa-router": "^5.4.0"
   },
