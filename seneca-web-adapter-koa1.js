@@ -19,7 +19,7 @@ module.exports = function koa (options, context, auth, routes, done) {
           body = yield Parse(this)
         }
 
-        const query = this.request.querystring
+        const query = Object.assign({}, this.request.query)
 
         const payload = {
           request$: this.request,
