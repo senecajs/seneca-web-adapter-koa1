@@ -94,6 +94,38 @@ describe('koa', () => {
     })
   })
 
+  it('querystring', done => {
+    var config = {
+      routes: {
+        pin: 'role:test,cmd:*',
+        map: {
+          echo: {GET: true}
+        }
+      }
+    }
+
+    si.use(Web, {adapter: require('..'), context: Router()})
+
+    si.add('role:test,cmd:echo', (msg, reply) => {
+      reply(null, msg.args.query)
+    })
+
+    si.act('role:web', config, (err, reply) => {
+      if (err) return done(err)
+
+      app.use(si.export('web/context')().routes())
+
+      Request.get('http://127.0.0.1:3000/echo?foo=bar', (err, res, body) => {
+        if (err) return done(err)
+
+        body = JSON.parse(body)
+
+        expect(body).to.be.equal({foo: 'bar'})
+        done()
+      })
+    })
+  })
+
   it('post requests', (done) => {
     var config = {
       routes: {
