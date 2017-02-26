@@ -15,7 +15,7 @@ module.exports = function koa (options, context, auth, routes, done) {
       context[method.toLowerCase()](route.path, function * (next) {
         let body = {}
 
-        if (this.req.method === 'POST') {
+        if (['POST', 'PUT'].indexOf(this.req.method) > -1) {
           body = yield Parse(this)
         }
 

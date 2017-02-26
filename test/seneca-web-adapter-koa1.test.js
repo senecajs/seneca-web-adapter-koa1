@@ -124,6 +124,36 @@ describe('koa', () => {
     })
   })
 
+  it('put requests', (done) => {
+    var config = {
+      routes: {
+        pin: 'role:test,cmd:*',
+        map: {
+          echo: {PUT: true}
+        }
+      }
+    }
+
+    si.use(Web, {adapter: require('..'), context: Router()})
+
+    si.add('role:test,cmd:echo', (msg, reply) => {
+      reply(null, msg.args.body)
+    })
+
+    si.act('role:web', config, (err, reply) => {
+      if (err) return done(err)
+
+      app.use(si.export('web/context')().routes())
+
+      Request.put('http://127.0.0.1:3000/echo', {json: {foo: 'bar'}}, (err, res, body) => {
+        if (err) return done(err)
+
+        expect(body).to.be.equal({foo: 'bar'})
+        done()
+      })
+    })
+  })
+
   it('handles errors', done => {
     var config = {
       routes: {
