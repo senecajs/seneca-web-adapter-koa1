@@ -1,3 +1,7 @@
+## 1.0.2 2017-02-25
+
+* Body parser now runs on PUT requests
+
 ## 1.0.1 2016-10-02
 
 * Update peerDependency to work with seneca-web@2.x (thanks @gknedo)
