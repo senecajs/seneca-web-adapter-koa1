@@ -1,3 +1,7 @@
+## 1.0.4 2017-05-15
+
+* Now respects the `parseBody` option from seneca-web
+
 ## 1.0.3 2017-02-25
 
 * Querystring now parsed properly as JSON.
