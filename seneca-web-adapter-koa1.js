@@ -16,7 +16,9 @@ module.exports = function koa (options, context, auth, routes, done) {
         let body = {}
 
         if (['POST', 'PUT'].indexOf(this.req.method) > -1) {
-          body = yield Parse(this)
+          body = options.parseBody === false
+            ? this.request.body
+            : yield Parse(this)
         }
 
         const query = Object.assign({}, this.request.query)
