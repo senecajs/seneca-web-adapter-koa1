@@ -10,8 +10,13 @@ module.exports = function koa (options, context, auth, routes, done) {
     return done(new Error('no context provided'))
   }
 
+  const logger = seneca.log.hasOwnProperty(options.loglevel)
+    ? seneca.log[options.loglevel]
+    : () => {}
+
   _.each(routes, route => {
     _.each(route.methods, method => {
+      logger(`Mounting ${method}: ${route.path}`)
       context[method.toLowerCase()](route.path, function * (next) {
         let body = {}
 
