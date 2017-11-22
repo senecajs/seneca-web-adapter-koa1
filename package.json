@@ -12,7 +12,7 @@
   "license": "MIT",
   "main": "seneca-web-adapter-koa1.js",
   "scripts": {
-    "test": "lab -I @@any-promise/REGISTRATION -v -L -t 80 -m 5000",
+    "test": "lab -I @@any-promise/REGISTRATION,WebAssembly -v -L -t 80 -m 5000",
     "test-debug": "node --debug-brk=5858 node_modules/lab/bin/lab -I @@any-promise/REGISTRATION -v -m 5000",
     "coveralls": "lab -s -r lcov | coveralls",
     "coverage": "lab -v -L -r html > docs/coverage.html"

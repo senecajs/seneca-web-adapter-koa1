@@ -23,11 +23,24 @@ describe('koa', () => {
   let app = null
   let server = null
 
+  const middleware = {
+    head: function * (next) {
+      this.type = 'application/json'
+      this.status = 200
+      yield next
+    },
+    res: function * (next) {
+      this.body = {success: true}
+    }
+  }
+
   beforeEach((done) => {
-    si = Seneca({log: 'silent'})
     app = Koa()
-    server = app.listen(3000)
-    done()
+    server = app.listen(3000, () => {
+      si = Seneca({log: 'silent'})
+      si.use(Web, {adapter: require('..'), context: new Router(), middleware})
+      si.ready(done)
+    })
   })
 
   afterEach((done) => {
@@ -43,8 +56,6 @@ describe('koa', () => {
         }
       }
     }
-
-    si.use(Web, {adapter: require('..'), context: Router()})
 
     si.act('role:web', config, (err, reply) => {
       if (err) return done(err)
@@ -76,8 +87,6 @@ describe('koa', () => {
       }
     }
 
-    si.use(Web, {adapter: require('..'), context: Router()})
-
     si.add('role:test,cmd:redirect', (msg, reply) => {
       reply(null, msg.args.body)
     })
@@ -104,8 +113,6 @@ describe('koa', () => {
         }
       }
     }
-
-    si.use(Web, {adapter: require('..'), context: Router()})
 
     si.add('role:test,cmd:echo', (msg, reply) => {
       reply(null, msg.args.query)
@@ -136,8 +143,6 @@ describe('koa', () => {
         }
       }
     }
-
-    si.use(Web, {adapter: require('..'), context: Router()})
 
     si.add('role:test,cmd:echo', (msg, reply) => {
       reply(null, msg.args.body)
@@ -170,8 +175,6 @@ describe('koa', () => {
       }
     }
 
-    si.use(Web, {adapter: require('..'), context: Router()})
-
     si.add('role:test,cmd:echo', (msg, reply) => {
       reply(null, msg.args.body)
     })
@@ -200,8 +203,6 @@ describe('koa', () => {
         }
       }
     }
-
-    si.use(Web, {adapter: require('..'), context: Router()})
 
     si.add('role:test,cmd:echo', (msg, reply) => {
       reply(null, msg.args.body)
@@ -233,8 +234,6 @@ describe('koa', () => {
         parseBody: false
       }
     }
-
-    si.use(Web, {adapter: require('..'), context: Router()})
 
     si.add('role:test,cmd:echo', (msg, reply) => {
       reply(null, msg.args.body)
@@ -276,8 +275,6 @@ describe('koa', () => {
       }
     })
 
-    si.use(Web, {adapter: require('..'), context: Router()})
-
     si.add('role:test,cmd:error', (msg, reply) => {
       reply(new Error('aw snap!'))
     })
@@ -293,6 +290,96 @@ describe('koa', () => {
         expect(res.statusCode).to.equal(400)
         expect(body).to.be.equal('aw snap!')
         done()
+      })
+    })
+  })
+
+  describe('middleware', () => {
+    it('blows up on invalid middleware input', done => {
+      var config = {
+        routes: {
+          pin: 'role:test,cmd:*',
+          middleware: ['total not valid'],
+          map: {
+            ping: true
+          }
+        }
+      }
+      si.act('role:web', config, (err, reply) => {
+        expect(err.details.message).to.equal('expected valid middleware, got total not valid')
+        done()
+      })
+    })
+
+    it('should call middleware routes properly - passing as strings', done => {
+      var config = {
+        routes: {
+          pin: 'role:test,cmd:*',
+          middleware: ['head', 'res'],
+          map: {
+            ping: true
+          }
+        }
+      }
+
+      si.add('role:test,cmd:ping', (msg, reply) => {
+        reply(null, {res: 'ping!'})
+      })
+
+      si.act('role:web', config, (err, reply) => {
+        if (err) return done(err)
+
+        app.use(si.export('web/context')().routes())
+
+        Request('http://127.0.0.1:3000/ping', (err, res, body) => {
+          if (err) return done(err)
+          body = JSON.parse(body)
+          expect(res.statusCode).to.equal(200)
+          expect(body).to.be.equal({success: true})
+          done()
+        })
+      })
+    })
+    it('should call middleware routes properly - passing as functions', done => {
+      var config = {
+        routes: {
+          pin: 'role:test,cmd:*',
+          map: {
+            ping: true
+          }
+        }
+      }
+
+      si.add('role:test,cmd:ping', (msg, reply) => {
+        reply(null, {res: 'ping!'})
+      })
+
+      si.add('role:web,routes:*', function (msg, cb) {
+        msg.routes.middleware = [
+          function * (next) {
+            this.status = 200
+            this.type = 'application/json'
+            yield next
+          },
+          function * (next) {
+            this.body = {success: true}
+          }
+        ]
+        this.prior(msg, cb)
+      })
+
+      si.act('role:web', config, (err, reply) => {
+        if (err) return done(err)
+
+        app.use(si.export('web/context')().routes())
+
+        Request('http://127.0.0.1:3000/ping', (err, res, body) => {
+          if (err) return done(err)
+          body = JSON.parse(body)
+          expect(res.statusCode).to.equal(200)
+          expect(body).to.be.equal({success: true})
+          done()
+        })
       })
     })
   })
