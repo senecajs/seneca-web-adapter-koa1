@@ -1,3 +1,7 @@
+## 1.1.0 2017-12-03
+
+* Adds support for middleware (#15)
+
 ## 1.0.4 2017-05-15
 
 * Now respects the `parseBody` option from seneca-web
