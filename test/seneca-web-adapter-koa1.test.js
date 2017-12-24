@@ -1,5 +1,3 @@
-
-
 'use strict'
 
 const Code = require('code')
@@ -12,7 +10,7 @@ const Router = require('koa-router')
 const BodyParser = require('koa-bodyparser')
 
 const expect = Code.expect
-const lab = exports.lab = Lab.script()
+const lab = (exports.lab = Lab.script())
 const describe = lab.describe
 const beforeEach = lab.beforeEach
 const afterEach = lab.afterEach
@@ -24,30 +22,30 @@ describe('koa', () => {
   let server = null
 
   const middleware = {
-    head: function * (next) {
+    head: function*(next) {
       this.type = 'application/json'
       this.status = 200
       yield next
     },
-    res: function * (next) {
-      this.body = {success: true}
+    res: function*() {
+      this.body = { success: true }
     }
   }
 
-  beforeEach((done) => {
+  beforeEach(done => {
     app = Koa()
     server = app.listen(3000, () => {
-      si = Seneca({log: 'silent'})
-      si.use(Web, {adapter: require('..'), context: new Router(), middleware})
+      si = Seneca({ log: 'silent' })
+      si.use(Web, { adapter: require('..'), context: new Router(), middleware })
       si.ready(done)
     })
   })
 
-  afterEach((done) => {
+  afterEach(done => {
     server.close(done)
   })
 
-  it('by default routes autoreply', (done) => {
+  it('by default routes autoreply', done => {
     var config = {
       routes: {
         pin: 'role:test,cmd:*',
@@ -57,32 +55,36 @@ describe('koa', () => {
       }
     }
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
       si.add('role:test,cmd:ping', (msg, reply) => {
-        reply(null, {res: 'pong!'})
+        reply(null, { res: 'pong!' })
       })
 
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
       Request('http://127.0.0.1:3000/ping', (err, res, body) => {
         if (err) return done(err)
 
         body = JSON.parse(body)
 
-        expect(body).to.be.equal({res: 'pong!'})
+        expect(body).to.be.equal({ res: 'pong!' })
         done()
       })
     })
   })
 
-  it('redirects properly', (done) => {
+  it('redirects properly', done => {
     var config = {
       routes: {
         pin: 'role:test,cmd:*',
         map: {
-          redirect: {redirect: '/', POST: true}
+          redirect: { redirect: '/', POST: true }
         }
       }
     }
@@ -91,16 +93,24 @@ describe('koa', () => {
       reply(null, msg.args.body)
     })
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
-      Request.post('http://127.0.0.1:3000/redirect', {json: {foo: 'bar'}}, (err, res, body) => {
-        if (err) return done(err)
-        expect(res.headers.location).to.be.equal('/')
-        done()
-      })
+      Request.post(
+        'http://127.0.0.1:3000/redirect',
+        { json: { foo: 'bar' } },
+        (err, res) => {
+          if (err) return done(err)
+          expect(res.headers.location).to.be.equal('/')
+          done()
+        }
+      )
     })
   })
 
@@ -109,7 +119,7 @@ describe('koa', () => {
       routes: {
         pin: 'role:test,cmd:*',
         map: {
-          echo: {GET: true}
+          echo: { GET: true }
         }
       }
     }
@@ -118,28 +128,32 @@ describe('koa', () => {
       reply(null, msg.args.query)
     })
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
       Request.get('http://127.0.0.1:3000/echo?foo=bar', (err, res, body) => {
         if (err) return done(err)
 
         body = JSON.parse(body)
 
-        expect(body).to.be.equal({foo: 'bar'})
+        expect(body).to.be.equal({ foo: 'bar' })
         done()
       })
     })
   })
 
-  it('post requests', (done) => {
+  it('post requests', done => {
     var config = {
       routes: {
         pin: 'role:test,cmd:*',
         map: {
-          echo: {POST: true}
+          echo: { POST: true }
         }
       }
     }
@@ -148,86 +162,34 @@ describe('koa', () => {
       reply(null, msg.args.body)
     })
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
-      Request.post('http://127.0.0.1:3000/echo', {json: {foo: 'bar'}}, (err, res, body) => {
-        if (err) return done(err)
+      Request.post(
+        'http://127.0.0.1:3000/echo',
+        { json: { foo: 'bar' } },
+        (err, res, body) => {
+          if (err) return done(err)
 
-        expect(body).to.be.equal({foo: 'bar'})
-        done()
-      })
-    })
-  })
-
-  it('post requests - no body parser', (done) => {
-    var config = {
-      routes: {
-        pin: 'role:test,cmd:*',
-        map: {
-          echo: {POST: true}
+          expect(body).to.be.equal({ foo: 'bar' })
+          done()
         }
-      },
-      options: {
-        parseBody: false
-      }
-    }
-
-    si.add('role:test,cmd:echo', (msg, reply) => {
-      reply(null, msg.args.body)
-    })
-
-    si.act('role:web', config, (err, reply) => {
-      if (err) return done(err)
-
-      app.use(BodyParser())
-      app.use(si.export('web/context')().routes())
-
-      Request.post('http://127.0.0.1:3000/echo', {json: {foo: 'bar'}}, (err, res, body) => {
-        if (err) return done(err)
-
-        expect(body).to.be.equal({foo: 'bar'})
-        done()
-      })
+      )
     })
   })
 
-  it('put requests', (done) => {
+  it('post requests - no body parser', done => {
     var config = {
       routes: {
         pin: 'role:test,cmd:*',
         map: {
-          echo: {PUT: true}
-        }
-      }
-    }
-
-    si.add('role:test,cmd:echo', (msg, reply) => {
-      reply(null, msg.args.body)
-    })
-
-    si.act('role:web', config, (err, reply) => {
-      if (err) return done(err)
-
-      app.use(si.export('web/context')().routes())
-
-      Request.put('http://127.0.0.1:3000/echo', {json: {foo: 'bar'}}, (err, res, body) => {
-        if (err) return done(err)
-
-        expect(body).to.be.equal({foo: 'bar'})
-        done()
-      })
-    })
-  })
-
-  it('put requests - no body parser', (done) => {
-    var config = {
-      routes: {
-        pin: 'role:test,cmd:*',
-        map: {
-          echo: {PUT: true}
+          echo: { POST: true }
         }
       },
       options: {
@@ -239,18 +201,102 @@ describe('koa', () => {
       reply(null, msg.args.body)
     })
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
       app.use(BodyParser())
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
-      Request.put('http://127.0.0.1:3000/echo', {json: {foo: 'bar'}}, (err, res, body) => {
-        if (err) return done(err)
+      Request.post(
+        'http://127.0.0.1:3000/echo',
+        { json: { foo: 'bar' } },
+        (err, res, body) => {
+          if (err) return done(err)
 
-        expect(body).to.be.equal({foo: 'bar'})
-        done()
-      })
+          expect(body).to.be.equal({ foo: 'bar' })
+          done()
+        }
+      )
+    })
+  })
+
+  it('put requests', done => {
+    var config = {
+      routes: {
+        pin: 'role:test,cmd:*',
+        map: {
+          echo: { PUT: true }
+        }
+      }
+    }
+
+    si.add('role:test,cmd:echo', (msg, reply) => {
+      reply(null, msg.args.body)
+    })
+
+    si.act('role:web', config, err => {
+      if (err) return done(err)
+
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
+
+      Request.put(
+        'http://127.0.0.1:3000/echo',
+        { json: { foo: 'bar' } },
+        (err, res, body) => {
+          if (err) return done(err)
+
+          expect(body).to.be.equal({ foo: 'bar' })
+          done()
+        }
+      )
+    })
+  })
+
+  it('put requests - no body parser', done => {
+    var config = {
+      routes: {
+        pin: 'role:test,cmd:*',
+        map: {
+          echo: { PUT: true }
+        }
+      },
+      options: {
+        parseBody: false
+      }
+    }
+
+    si.add('role:test,cmd:echo', (msg, reply) => {
+      reply(null, msg.args.body)
+    })
+
+    si.act('role:web', config, err => {
+      if (err) return done(err)
+
+      app.use(BodyParser())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
+
+      Request.put(
+        'http://127.0.0.1:3000/echo',
+        { json: { foo: 'bar' } },
+        (err, res, body) => {
+          if (err) return done(err)
+
+          expect(body).to.be.equal({ foo: 'bar' })
+          done()
+        }
+      )
     })
   })
 
@@ -264,11 +310,10 @@ describe('koa', () => {
       }
     }
 
-    app.use(function * (next) {
+    app.use(function*(next) {
       try {
         yield next
-      }
-      catch (err) {
+      } catch (err) {
         this.status = 400
         this.message = err.orig.message.replace('gate-executor: ', '')
         this.app.emit('error', err, this)
@@ -279,10 +324,14 @@ describe('koa', () => {
       reply(new Error('aw snap!'))
     })
 
-    si.act('role:web', config, (err, reply) => {
+    si.act('role:web', config, err => {
       if (err) return done(err)
 
-      app.use(si.export('web/context')().routes())
+      app.use(
+        si
+          .export('web/context')()
+          .routes()
+      )
 
       Request.get('http://127.0.0.1:3000/error', (err, res, body) => {
         if (err) return done(err)
@@ -305,8 +354,10 @@ describe('koa', () => {
           }
         }
       }
-      si.act('role:web', config, (err, reply) => {
-        expect(err.details.message).to.equal('expected valid middleware, got total not valid')
+      si.act('role:web', config, err => {
+        expect(err.details.message).to.equal(
+          'expected valid middleware, got total not valid'
+        )
         done()
       })
     })
@@ -323,19 +374,23 @@ describe('koa', () => {
       }
 
       si.add('role:test,cmd:ping', (msg, reply) => {
-        reply(null, {res: 'ping!'})
+        reply(null, { res: 'ping!' })
       })
 
-      si.act('role:web', config, (err, reply) => {
+      si.act('role:web', config, err => {
         if (err) return done(err)
 
-        app.use(si.export('web/context')().routes())
+        app.use(
+          si
+            .export('web/context')()
+            .routes()
+        )
 
         Request('http://127.0.0.1:3000/ping', (err, res, body) => {
           if (err) return done(err)
           body = JSON.parse(body)
           expect(res.statusCode).to.equal(200)
-          expect(body).to.be.equal({success: true})
+          expect(body).to.be.equal({ success: true })
           done()
         })
       })
@@ -351,33 +406,37 @@ describe('koa', () => {
       }
 
       si.add('role:test,cmd:ping', (msg, reply) => {
-        reply(null, {res: 'ping!'})
+        reply(null, { res: 'ping!' })
       })
 
-      si.add('role:web,routes:*', function (msg, cb) {
+      si.add('role:web,routes:*', function(msg, cb) {
         msg.routes.middleware = [
-          function * (next) {
+          function*(next) {
             this.status = 200
             this.type = 'application/json'
             yield next
           },
-          function * (next) {
-            this.body = {success: true}
+          function*() {
+            this.body = { success: true }
           }
         ]
         this.prior(msg, cb)
       })
 
-      si.act('role:web', config, (err, reply) => {
+      si.act('role:web', config, err => {
         if (err) return done(err)
 
-        app.use(si.export('web/context')().routes())
+        app.use(
+          si
+            .export('web/context')()
+            .routes()
+        )
 
         Request('http://127.0.0.1:3000/ping', (err, res, body) => {
           if (err) return done(err)
           body = JSON.parse(body)
           expect(res.statusCode).to.equal(200)
-          expect(body).to.be.equal({success: true})
+          expect(body).to.be.equal({ success: true })
           done()
         })
       })
